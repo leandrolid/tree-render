@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  list-style: none;
+}
+
+.company {
+  border: none;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
+  background: var(--blue-900);
+  border-radius: 2px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.company[data-active="true"] {
+  background: var(--blue-500);
+}

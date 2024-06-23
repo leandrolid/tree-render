@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button {
+  background: #fff;
+  border: 1px solid var(--shapes-border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button svg {
+  color: var(--blue-500);
+}
+
+.button[data-active="true"] {
+  background: var(--blue-500);
+  color: #fff;
+}
+
+.button[data-active="true"] svg {
+  color: #fff;
+}
