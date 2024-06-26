@@ -13,9 +13,11 @@ The tree component dynamically loads and displays assets and locations, supporti
 ## Preview
 You can acces the app using this [link](https://tree-render.vercel.app/)
 
-<video src="./.github/app-preview.mp4" ></video>
+https://github.com/leandrolid/tree-render/assets/61424755/df41ad42-5184-4fb3-a609-eed924d61bc7
 
 ## Future improvements
 - Render child nodes dinamically, only when their branch is opened
 - Improve the UI during load time and before a company is selected
 - Fix test for webworker
+
+
