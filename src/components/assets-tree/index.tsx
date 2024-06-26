@@ -20,7 +20,6 @@ export const AssetsTree: FC = () => {
   const filteredItems = useMemo(() => {
     return tree.filter((node) => {
       const match = node.name.toLowerCase().includes(search.toLowerCase()) || node.children.some((child) => child.name.toLowerCase().includes(search.toLowerCase()))
-      if (match) console.log(node)
       const energy = node.sensorType === type || node.children.some((child) => child.sensorType === type)
       const critcal = node.status === status || node.children.some((child) => child.status === status)
       return match && (type ? energy : true) && (status ? critcal : true)
