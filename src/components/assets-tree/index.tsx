@@ -50,14 +50,14 @@ export const AssetsTree: FC = () => {
         worker.onmessage = (event) => {
           setTree(event.data)
           setIsLoading(false)
-          // setTree(allNodes)
         }
       } catch (error) {
         console.error(error)
         setIsLoading(false)
       }
     }
-    getNodes()
+
+    if (company.id) getNodes()
   }, [company.id])
 
   const handleSetAsset = (node: Node) => {

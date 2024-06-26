@@ -1,4 +1,3 @@
-import data from '../tests/api-data.json'
 import { AssetModel } from '../types/asset.model'
 import { httpClient } from './http-client'
 
@@ -7,11 +6,10 @@ type Params = {
 }
 
 export const getAssetsService = async ({ companyId }: Params): Promise<AssetModel[]> => {
-  await httpClient({
+  const res = await httpClient({
     path: `/companies/${companyId}/assets`,
     method: 'get'
   })
 
-  const company = Reflect.get(data, companyId)
-  return company ? company.assets : []
+  return res
 }

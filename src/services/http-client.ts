@@ -4,8 +4,8 @@ type Params = {
 }
 
 export const httpClient = async (params: Params) => {
-  const response = await new Promise((resolve) => {
-    setTimeout(() => resolve(params), 200)
+  const response = await fetch(new URL(params.path, 'https://fake-api.tractian.com/'), {
+    method: params.method,
   })
-  return response
+  return response.json()
 }
