@@ -8,8 +8,7 @@ import { Node } from '../../types/node'
 import * as helper from './helper'
 import styles from './styles.module.css'
 
-const containerHeight = 700
-const itemHeight = 26
+const worker = new Worker(new URL('./webworker.ts', import.meta.url))
 
 export const AssetsTree: FC = () => {
   const [tree, setTree] = useState<Node[]>([])
@@ -28,13 +27,13 @@ export const AssetsTree: FC = () => {
     })
   }, [search, status, tree, type])
 
-  const startIndex = Math.floor(scrollTop / itemHeight)
+  const startIndex = Math.floor(scrollTop / helper.ITEM_HEIGHT)
   const endIndex = Math.min(
-    startIndex + Math.ceil(containerHeight / itemHeight),
+    startIndex + Math.ceil(helper.CONTAINER_HEIGHT / helper.ITEM_HEIGHT),
     filteredItems.length
   )
   const visibleItems = filteredItems.slice(startIndex, endIndex)
-  const invisibleItemsHeight = (startIndex + visibleItems.length - endIndex) * itemHeight
+  const invisibleItemsHeight = (startIndex + visibleItems.length - endIndex) * helper.ITEM_HEIGHT
 
   useEffect(() => {
     const getNodes = async () => {
@@ -47,11 +46,14 @@ export const AssetsTree: FC = () => {
           getLocationsService({ companyId: company.id }),
         ])
 
-        const allNodes = helper.orderElements([...locations, ...assets], null, 0)
-        setTree(allNodes)
+        worker.postMessage([...locations, ...assets])
+        worker.onmessage = (event) => {
+          setTree(event.data)
+          setIsLoading(false)
+          // setTree(allNodes)
+        }
       } catch (error) {
         console.error(error)
-      } finally {
         setIsLoading(false)
       }
     }
@@ -71,20 +73,20 @@ export const AssetsTree: FC = () => {
         setScrollTop(Reflect.get(event.target, 'scrollTop'))
       }}
     >
-      <div style={{ height: `${filteredItems.length * itemHeight}px` }}>
+      <div style={{ height: `${filteredItems.length * helper.ITEM_HEIGHT}px` }}>
         <ul
           className={styles.list}
           style={{
             position: 'relative',
-            height: `${visibleItems.length * itemHeight}px`,
-            top: `${startIndex * itemHeight}px`,
+            height: `${visibleItems.length * helper.ITEM_HEIGHT}px`,
+            top: `${startIndex * helper.ITEM_HEIGHT}px`,
           }}
         >
           {
             isLoading
               ? (
                 <li className={styles.item}>
-                  <div className={styles.itemLabel}>Loading...</div>
+                  <div className={styles.itemLabel}>Carregando...</div>
                 </li>
               )
               : visibleItems
