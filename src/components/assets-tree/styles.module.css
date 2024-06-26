@@ -16,10 +16,6 @@
   position: relative;
 }
 
-.itemLabel::has(div[data-children="true"]) {
-  border-left: 1px solid var(--shapes-border);
-}
-
 .itemLabel {
   display: flex;
   align-items: center;
