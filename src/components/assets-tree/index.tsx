@@ -1,31 +1,58 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { getAssetsService } from '../../services/get-assets.service'
 import { useCompanies } from '../../stores/companies.store'
 
 import { getLocationsService } from '../../services/get-locations.service'
 import { useFilters } from '../../stores/filters.store'
 import { Node } from '../../types/node'
-import { Tree } from '../../types/tree'
 import * as helper from './helper'
 import styles from './styles.module.css'
 
+const containerHeight = 700
+const itemHeight = 26
+
 export const AssetsTree: FC = () => {
   const [tree, setTree] = useState<Node[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [scrollTop, setScrollTop] = useState(0)
   const company = useCompanies((state) => state.company)
   const { search, type, status, setAsset, asset } = useFilters()
+
+  const filteredItems = useMemo(() => {
+    const searchRegex = new RegExp(search, 'ig')
+    return tree.filter((node) => {
+      const match = searchRegex.test(node.name) || node.children.some((child) => searchRegex.test(child.name))
+      const energy = node.sensorType === type || node.children.some((child) => child.sensorType === type)
+      const critcal = node.status === status || node.children.some((child) => child.status === status)
+      return match && (type ? energy : true) && (status ? critcal : true)
+    })
+  }, [search, status, tree, type])
+
+  const startIndex = Math.floor(scrollTop / itemHeight)
+  const endIndex = Math.min(
+    startIndex + Math.ceil(containerHeight / itemHeight),
+    filteredItems.length
+  )
+  const visibleItems = filteredItems.slice(startIndex, endIndex)
+  const invisibleItemsHeight = (startIndex + visibleItems.length - endIndex) * itemHeight
 
   useEffect(() => {
     const getNodes = async () => {
       try {
+        setIsLoading(true)
+        setTree([])
+
         const [assets, locations] = await Promise.all([
           getAssetsService({ companyId: company.id }),
           getLocationsService({ companyId: company.id }),
         ])
 
-        const allNodes = [...locations, ...assets]
+        const allNodes = helper.orderElements([...locations, ...assets], null, 0)
         setTree(allNodes)
       } catch (error) {
         console.error(error)
+      } finally {
+        setIsLoading(false)
       }
     }
     getNodes()
@@ -37,64 +64,63 @@ export const AssetsTree: FC = () => {
     }
   }
 
-  const renderTree = (parentId: string | null): Tree => {
-    return tree
-      .filter((node) => helper.validateNode(node, parentId))
-      .map((node) => {
-        const children = renderTree(node.id)
-        const searchRegex = new RegExp(search, 'ig')
-        const match = searchRegex.test(node.name) || children.some((node) => node.match)
-        const eletric = node.sensorType === type || children.some((node) => node.eletric)
-        const critcal = node.status === status || children.some((node) => node.critcal)
-        return {
-          match,
-          eletric,
-          critcal,
-          children: (
-            <li
-              key={node.id}
-              className={styles.item}
-              data-children={children.length > 0}
-              data-match={match}
-              data-energy={type ? eletric : 'na'}
-              data-alert={status ? critcal : 'na'}
-              title={node.name}
-            >
-              <div
-                className={styles.itemLabel}
-                data-status={node.status}
-                data-active={asset.id === node.id}
-                role={helper.isComponent(node) ? 'button' : undefined}
-                tabIndex={helper.isComponent(node) ? 0 : undefined}
-                onClick={() => handleSetAsset(node)}
-              >
-                <img
-                  id={`icon-${node.id}`}
-                  src={helper.getIcon(node)}
-                  alt={helper.getAlt(node)}
-                  className={styles.itemIcon}
-                />
-                <span>{node.name}</span>
-                {helper.getStatusIcon(node.sensorType)}
-              </div>
-              {
-                children.length > 0 && (
-                  <ul className={styles.list}>
-                    {children.map((node) => node.children)}
-                  </ul>
-                )
-              }
-            </li>
-          )
-        }
-      })
-  }
-
   return (
-    <div className={styles.container}>
-      <ul className={styles.list}>
-        {renderTree(null).map((node) => node.children)}
-      </ul>
+    <div
+      className={styles.container}
+      onScroll={(event) => {
+        setScrollTop(Reflect.get(event.target, 'scrollTop'))
+      }}
+    >
+      <div style={{ height: `${filteredItems.length * itemHeight}px` }}>
+        <ul
+          className={styles.list}
+          style={{
+            position: 'relative',
+            height: `${visibleItems.length * itemHeight}px`,
+            top: `${startIndex * itemHeight}px`,
+          }}
+        >
+          {
+            isLoading
+              ? (
+                <li className={styles.item}>
+                  <div className={styles.itemLabel}>Loading...</div>
+                </li>
+              )
+              : visibleItems
+                .map((node) => (
+                  <li
+                    key={node.id}
+                    className={styles.item}
+                    title={node.name}
+                    style={{
+                      paddingLeft: `${node.level * 20}px`,
+                    }}
+                  >
+                    <div
+                      data-children={node.children.length > 0}
+                      className={styles.itemLabel}
+                      data-status={node.status}
+                      data-active={asset.id === node.id}
+                      role={helper.isComponent(node) ? 'button' : undefined}
+                      tabIndex={helper.isComponent(node) ? 0 : undefined}
+                      onClick={() => handleSetAsset(node)}
+                    >
+                      <img
+                        id={`icon-${node.id}`}
+                        src={helper.getIcon(node)}
+                        alt={helper.getAlt(node)}
+                        className={styles.itemIcon}
+                      />
+                      <span>{node.name}</span>
+                      {helper.getStatusIcon(node.sensorType)}
+                    </div>
+                  </li>
+                ))
+          }
+        </ul>
+        <div style={{ height: `${invisibleItemsHeight}px` }} />
+      </div>
     </div>
   )
 }

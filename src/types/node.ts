@@ -5,4 +5,6 @@ export type Node = {
   sensorType?: string | null
   status?: string | null
   name: string
+  level: number
+  children: Node[]
 }

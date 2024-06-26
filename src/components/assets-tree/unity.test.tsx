@@ -98,7 +98,7 @@ describe('AssetsTree', () => {
       screen.getByText(asset.name).click()
     })
 
-    expect(useFilters().setAsset).toHaveBeenCalledWith(asset)
+    expect(useFilters().setAsset).toHaveBeenCalledWith({ ...asset, level: 0, children: expect.any(Array) })
     expect(useFilters().setAsset).not.toHaveBeenCalledWith(notAsset)
   })
 
@@ -108,70 +108,10 @@ describe('AssetsTree', () => {
     })
 
     const withChildren = screen.getByTitle('Machinery house')
-    expect(withChildren).toHaveAttribute('data-children', 'true')
+    expect(withChildren.firstChild).toHaveAttribute('data-children', 'true')
 
     const withoutChildren = screen.getByTitle('Fan - External')
-    expect(withoutChildren).toHaveAttribute('data-children', 'false')
-  })
-
-  it('sets the attribute data-match correctly', async () => {
-    (useFilters as unknown as Mock).mockReturnValue({
-      search: 'machinery',
-      type: '',
-      status: '',
-      setAsset: vi.fn(),
-      asset: Object.create(null),
-    })
-
-    await act(async () => {
-      render(<AssetsTree />)
-    })
-
-    const withMatch = screen.getByTitle('Machinery house')
-    expect(withMatch).toHaveAttribute('data-match', 'true')
-
-    const withoutMatch = screen.getByTitle('Fan - External')
-    expect(withoutMatch).toHaveAttribute('data-match', 'false')
-  })
-
-  it('sets the attribute data-energy correctly', async () => {
-    (useFilters as unknown as Mock).mockReturnValue({
-      search: '',
-      type: 'energy',
-      status: '',
-      setAsset: vi.fn(),
-      asset: Object.create(null),
-    })
-
-    await act(async () => {
-      render(<AssetsTree />)
-    })
-
-    const withEletric = screen.getByTitle('Machinery house')
-    expect(withEletric).toHaveAttribute('data-energy', 'false')
-
-    const withoutEletric = screen.getByTitle('Fan - External')
-    expect(withoutEletric).toHaveAttribute('data-energy', 'true')
-  })
-
-  it('sets the attribute data-alert correctly', async () => {
-    (useFilters as unknown as Mock).mockReturnValue({
-      search: '',
-      type: '',
-      status: 'alert',
-      setAsset: vi.fn(),
-      asset: Object.create(null),
-    })
-
-    await act(async () => {
-      render(<AssetsTree />)
-    })
-
-    const withCritical = screen.getByTitle('Motor H12D- Stage 1')
-    expect(withCritical).toHaveAttribute('data-alert', 'true')
-
-    const withoutCritical = screen.getByTitle('MOTOR RT COAL AF01')
-    expect(withoutCritical).toHaveAttribute('data-alert', 'false')
+    expect(withoutChildren.firstChild).toHaveAttribute('data-children', 'false')
   })
 
   it('sets the attribute data-active correctly', async () => {

@@ -8,33 +8,16 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   padding-left: 0.5rem;
   margin-left: 0.5rem;
 }
 
 .item {
   position: relative;
-  padding-left: 0.5rem;
 }
 
-.item[data-children="true"] {
+.itemLabel::has(div[data-children="true"]) {
   border-left: 1px solid var(--shapes-border);
-}
-
-.item[data-children="true"]::before {
-  content: '▼';
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translateX(-50%);
-  background: #fff;
-}
-
-.item[data-match="false"],
-.item[data-energy="false"],
-.item[data-alert="false"] {
-  display: none;
 }
 
 .itemLabel {
@@ -43,6 +26,17 @@
   gap: 0.25rem;
   padding: 0.25rem;
   white-space: nowrap;
+  height: 26px;
+}
+
+.itemLabel[data-children="true"]::before {
+  content: '▼';
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: #fff;
+  padding-left: 0.5rem;
 }
 
 .itemLabel[role="button"] {
