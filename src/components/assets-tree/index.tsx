@@ -18,9 +18,9 @@ export const AssetsTree: FC = () => {
   const { search, type, status, setAsset, asset } = useFilters()
 
   const filteredItems = useMemo(() => {
-    const searchRegex = new RegExp(search, 'ig')
     return tree.filter((node) => {
-      const match = searchRegex.test(node.name) || node.children.some((child) => searchRegex.test(child.name))
+      const match = node.name.toLowerCase().includes(search.toLowerCase()) || node.children.some((child) => child.name.toLowerCase().includes(search.toLowerCase()))
+      if (match) console.log(node)
       const energy = node.sensorType === type || node.children.some((child) => child.sensorType === type)
       const critcal = node.status === status || node.children.some((child) => child.status === status)
       return match && (type ? energy : true) && (status ? critcal : true)
