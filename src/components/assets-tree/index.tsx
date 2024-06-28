@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { getAssetsService } from '../../services/get-assets.service'
 import { useCompanies } from '../../stores/companies.store'
 
@@ -8,12 +8,11 @@ import { Node } from '../../types/node'
 import * as helper from './helper'
 import styles from './styles.module.css'
 
-const worker = new Worker(new URL('./webworker.ts', import.meta.url))
-
 export const AssetsTree: FC = () => {
   const [tree, setTree] = useState<Node[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [scrollTop, setScrollTop] = useState(0)
+  const worker = useRef<Worker>()
   const company = useCompanies((state) => state.company)
   const { search, type, status, setAsset, asset } = useFilters()
 
@@ -45,8 +44,10 @@ export const AssetsTree: FC = () => {
           getLocationsService({ companyId: company.id }),
         ])
 
-        worker.postMessage([...locations, ...assets])
-        worker.onmessage = (event) => {
+        worker.current?.terminate()
+        worker.current = new Worker(new URL('./webworker.ts', import.meta.url))
+        worker.current.postMessage([...locations, ...assets])
+        worker.current.onmessage = (event) => {
           setTree(event.data)
           setIsLoading(false)
         }
